@@ -11,6 +11,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.RelativeLayout
 import android.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -30,6 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityMapsBinding
     private val TAG = MapsActivity::class.java.simpleName
     private val REQUEST_LOCATION_PERMISSION = 1
+    private var circle: Circle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,6 +117,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             googleMap.addMarker(
                 MarkerOptions().position(it).title("S3CORP").snippet(snippet)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            )
+            val latLng: LatLng = LatLng(it.latitude, it.longitude)
+            googleMap.addCircle(
+                CircleOptions()
+                    .center(latLng)
+                    .radius(1000.0)
+                    .fillColor(ContextCompat.getColor(this, R.color.colorPrimaryTranslucent))
+                    .strokeColor(ContextCompat.getColor(this, R.color.colorPrimary))
             )
         }
         // Click on exists makers will be remove
