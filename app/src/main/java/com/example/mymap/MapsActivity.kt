@@ -23,8 +23,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.example.mymap.databinding.ActivityMapsBinding
 import com.example.mymap.place.Place
+import com.example.mymap.place.PlaceRenderer
 import com.example.mymap.place.PlacesReader
 import com.google.android.gms.maps.model.*
+import com.google.maps.android.clustering.ClusterManager
 import java.io.IOException
 import java.util.*
 
@@ -55,13 +57,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        /* 10 */
+        mapFragment.getMapAsync {
+            addClusteredMarkers(it)
+        }
     }
 
     @SuppressLint("PotentialBehaviorOverride")
     override fun onMapReady(googleMap: GoogleMap) {
         /* 2 */
         mMap = googleMap
-        mMap.setInfoWindowAdapter(MakerInfoWindowAdapter(this))
 
         val latitude = 10.79877246173053
         val longitude = 106.67118725596038
@@ -182,6 +187,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .icon(bicycleIcon)
             )
             maker?.tag = places
+        }
+    }
+
+    private fun addClusteredMarkers(googleMap: GoogleMap) {
+        // Create the ClusterManager class and set the custom renderer.
+        val clusterManager = ClusterManager<Place>(this, googleMap)
+        clusterManager.renderer =
+            PlaceRenderer(
+                this,
+                googleMap,
+                clusterManager
+            )
+
+        // Set custom info window adapter
+        clusterManager.markerCollection.setInfoWindowAdapter(MakerInfoWindowAdapter(this))
+
+        // Add the places to the ClusterManager.
+        clusterManager.addItems(places)
+        clusterManager.cluster()
+
+        // Set ClusterManager as the OnCameraIdleListener so that it
+        // can re-cluster when zooming in and out.
+        googleMap.setOnCameraIdleListener {
+            clusterManager.onCameraIdle()
         }
     }
 
